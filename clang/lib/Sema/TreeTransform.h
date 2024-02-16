@@ -3981,7 +3981,16 @@ public:
                                             SourceLocation BeginLoc,
                                             SourceLocation EndLoc,
                                             StmtResult StrBlock) {
-    llvm_unreachable("Not yet implemented!");
+    getSema().ActOnOpenACCConstruct(K, BeginLoc);
+
+    // TODO OpenACC: Include clauses.
+    if (getSema().ActOnStartOpenACCStmtDirective(K, BeginLoc))
+      return StmtError();
+
+    StrBlock = getSema().ActOnOpenACCAssociatedStmt(K, StrBlock);
+
+    return getSema().ActOnEndOpenACCStmtDirective(K, BeginLoc, EndLoc,
+                                                  StrBlock);
   }
 
 private:
