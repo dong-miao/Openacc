@@ -444,6 +444,60 @@ Bug Fixes to C++ Support
   and (`#79745 <https://github.com/llvm/llvm-project/issues/79745>`_)
 - Fix incorrect code generation caused by the object argument of ``static operator()`` and ``static operator[]`` calls not being evaluated.
   Fixes (`#67976 <https://github.com/llvm/llvm-project/issues/67976>`_)
+- Fix crash and diagnostic with const qualified member operator new.
+  Fixes (`#79748 <https://github.com/llvm/llvm-project/issues/79748>`_)
+- Fixed a crash where substituting into a requires-expression that involves parameter packs
+  during the equivalence determination of two constraint expressions.
+  (`#72557 <https://github.com/llvm/llvm-project/issues/72557>`_)
+- Fix a crash when specializing an out-of-line member function with a default
+  parameter where we did an incorrect specialization of the initialization of
+  the default parameter.
+  Fixes (`#68490 <https://github.com/llvm/llvm-project/issues/68490>`_)
+- Fix a crash when trying to call a varargs function that also has an explicit object parameter.
+  Fixes (`#80971 ICE when explicit object parameter be a function parameter pack`)
+- Reject explicit object parameters on `new` and `delete` operators.
+  Fixes (`#82249 <https://github.com/llvm/llvm-project/issues/82249>` _)
+- Fixed a bug where abbreviated function templates would append their invented template parameters to
+  an empty template parameter lists.
+- Clang now classifies aggregate initialization in C++17 and newer as constant
+  or non-constant more accurately. Previously, only a subset of the initializer
+  elements were considered, misclassifying some initializers as constant. Fixes
+  some of (`#80510 <https://github.com/llvm/llvm-project/issues/80510>`).
+- Clang now ignores top-level cv-qualifiers on function parameters in template partial orderings.
+  (`#75404 <https://github.com/llvm/llvm-project/issues/75404>`_)
+- No longer reject valid use of the ``_Alignas`` specifier when declaring a
+  local variable, which is supported as a C11 extension in C++. Previously, it
+  was only accepted at namespace scope but not at local function scope.
+- Clang no longer tries to call consteval constructors at runtime when they appear in a member initializer.
+  (`#82154 <https://github.com/llvm/llvm-project/issues/82154>`_`)
+- Fix crash when using an immediate-escalated function at global scope.
+  (`#82258 <https://github.com/llvm/llvm-project/issues/82258>`_)
+- Correctly immediate-escalate lambda conversion functions.
+  (`#82258 <https://github.com/llvm/llvm-project/issues/82258>`_)
+- Fixed an issue where template parameters of a nested abbreviated generic lambda within
+  a requires-clause lie at the same depth as those of the surrounding lambda. This,
+  in turn, results in the wrong template argument substitution during constraint checking.
+  (`#78524 <https://github.com/llvm/llvm-project/issues/78524>`_)
+- Clang no longer instantiates the exception specification of discarded candidate function
+  templates when determining the primary template of an explicit specialization.
+- Fixed a crash in Microsoft compatibility mode where unqualified dependent base class
+  lookup searches the bases of an incomplete class.
+- Fix a crash when an unresolved overload set is encountered on the RHS of a ``.*`` operator.
+  (`#53815 <https://github.com/llvm/llvm-project/issues/53815>`_)
+- In ``__restrict``-qualified member functions, attach ``__restrict`` to the pointer type of
+  ``this`` rather than the pointee type.
+  Fixes (`#82941 <https://github.com/llvm/llvm-project/issues/82941>`_),
+  (`#42411 <https://github.com/llvm/llvm-project/issues/42411>`_), and
+  (`#18121 <https://github.com/llvm/llvm-project/issues/18121>`_).
+- Clang now properly reports supported C++11 attributes when using
+  ``__has_cpp_attribute`` and parses attributes with arguments in C++03
+  (`#82995 <https://github.com/llvm/llvm-project/issues/82995>`_)
+- Clang now properly diagnoses missing 'default' template arguments on a variety
+  of templates. Previously we were diagnosing on any non-function template
+  instead of only on class, alias, and variable templates, as last updated by
+  CWG2032.
+  Fixes (`#83461 <https://github.com/llvm/llvm-project/issues/83461>`_)
+
 
 Bug Fixes to AST Handling
 ^^^^^^^^^^^^^^^^^^^^^^^^^
