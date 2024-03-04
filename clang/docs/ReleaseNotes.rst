@@ -495,9 +495,10 @@ Bug Fixes to C++ Support
 - Clang now properly diagnoses missing 'default' template arguments on a variety
   of templates. Previously we were diagnosing on any non-function template
   instead of only on class, alias, and variable templates, as last updated by
-  CWG2032.
-  Fixes (`#83461 <https://github.com/llvm/llvm-project/issues/83461>`_)
-
+  CWG2032. Fixes (#GH83461)
+- Fixed an issue where an attribute on a declarator would cause the attribute to
+  be destructed prematurely. This fixes a pair of Chromium that were brought to
+  our attention by an attempt to fix in (#GH77703). Fixes (#GH83611).
 
 Bug Fixes to AST Handling
 ^^^^^^^^^^^^^^^^^^^^^^^^^
