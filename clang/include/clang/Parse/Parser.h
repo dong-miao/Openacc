@@ -3588,9 +3588,6 @@ private:
   OpenACCClauseParseResult OpenACCCannotContinue();
   OpenACCClauseParseResult OpenACCSuccess(OpenACCClause *Clause);
 
-  using OpenACCConditionExprParseResult =
-      std::pair<ExprResult, OpenACCParseCanContinue>;
-
   /// Parses the OpenACC directive (the entire pragma) including the clause
   /// list, but does not produce the main AST node.
   OpenACCDirectiveParseInfo ParseOpenACCDirective();
