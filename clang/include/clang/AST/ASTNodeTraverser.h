@@ -217,7 +217,8 @@ public:
   void Visit(const OpenACCClause *C) {
     getNodeDelegate().AddChild([=] {
       getNodeDelegate().Visit(C);
-      // TODO OpenACC: Switch on clauses that have children, and add them.
+      for (const auto *S : C->children())
+        Visit(S);
     });
   }
 
