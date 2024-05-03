@@ -375,10 +375,12 @@ void TextNodeDumper::Visit(const OpenACCClause *C) {
     case OpenACCClauseKind::Default:
       OS << '(' << cast<OpenACCDefaultClause>(C)->getDefaultClauseKind() << ')';
       break;
+    case OpenACCClauseKind::Attach:
     case OpenACCClauseKind::Copy:
     case OpenACCClauseKind::PCopy:
     case OpenACCClauseKind::PresentOrCopy:
     case OpenACCClauseKind::If:
+    case OpenACCClauseKind::DevicePtr:
     case OpenACCClauseKind::FirstPrivate:
     case OpenACCClauseKind::NoCreate:
     case OpenACCClauseKind::NumGangs:

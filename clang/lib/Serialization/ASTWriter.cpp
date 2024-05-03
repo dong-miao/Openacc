@@ -7355,6 +7355,18 @@ void ASTRecordWriter::writeOpenACCClause(const OpenACCClause *C) {
     writeOpenACCVarList(FPC);
     return;
   }
+  case OpenACCClauseKind::Attach: {
+    const auto *AC = cast<OpenACCAttachClause>(C);
+    writeSourceLocation(AC->getLParenLoc());
+    writeOpenACCVarList(AC);
+    return;
+  }
+  case OpenACCClauseKind::DevicePtr: {
+    const auto *DPC = cast<OpenACCDevicePtrClause>(C);
+    writeSourceLocation(DPC->getLParenLoc());
+    writeOpenACCVarList(DPC);
+    return;
+  }
   case OpenACCClauseKind::NoCreate: {
     const auto *NCC = cast<OpenACCNoCreateClause>(C);
     writeSourceLocation(NCC->getLParenLoc());
@@ -7412,11 +7424,9 @@ void ASTRecordWriter::writeOpenACCClause(const OpenACCClause *C) {
   case OpenACCClauseKind::Vector:
   case OpenACCClauseKind::NoHost:
   case OpenACCClauseKind::UseDevice:
-  case OpenACCClauseKind::Attach:
   case OpenACCClauseKind::Delete:
   case OpenACCClauseKind::Detach:
   case OpenACCClauseKind::Device:
-  case OpenACCClauseKind::DevicePtr:
   case OpenACCClauseKind::DeviceResident:
   case OpenACCClauseKind::Host:
   case OpenACCClauseKind::Link:
