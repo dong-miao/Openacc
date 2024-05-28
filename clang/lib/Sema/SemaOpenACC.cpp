@@ -845,7 +845,7 @@ ExprResult SemaOpenACC::CheckReductionVar(Expr *VarExpr) {
 }
 
 void SemaOpenACC::ActOnConstruct(OpenACCDirectiveKind K,
-                                 SourceLocation StartLoc) {
+                                 SourceLocation DirLoc) {
   switch (K) {
   case OpenACCDirectiveKind::Invalid:
     // Nothing to do here, an invalid kind has nothing we can check here.  We
@@ -860,7 +860,7 @@ void SemaOpenACC::ActOnConstruct(OpenACCDirectiveKind K,
     // here as these constructs do not take any arguments.
     break;
   default:
-    Diag(StartLoc, diag::warn_acc_construct_unimplemented) << K;
+    Diag(DirLoc, diag::warn_acc_construct_unimplemented) << K;
     break;
   }
 }
@@ -1266,6 +1266,7 @@ bool SemaOpenACC::ActOnStartStmtDirective(OpenACCDirectiveKind K,
 
 StmtResult SemaOpenACC::ActOnEndStmtDirective(OpenACCDirectiveKind K,
                                               SourceLocation StartLoc,
+                                              SourceLocation DirLoc,
                                               SourceLocation EndLoc,
                                               ArrayRef<OpenACCClause *> Clauses,
                                               StmtResult AssocStmt) {
@@ -1279,7 +1280,7 @@ StmtResult SemaOpenACC::ActOnEndStmtDirective(OpenACCDirectiveKind K,
   case OpenACCDirectiveKind::Kernels:
     // TODO OpenACC: Add clauses to the construct here.
     return OpenACCComputeConstruct::Create(
-        getASTContext(), K, StartLoc, EndLoc, Clauses,
+        getASTContext(), K, StartLoc, DirLoc, EndLoc, Clauses,
         AssocStmt.isUsable() ? AssocStmt.get() : nullptr);
   }
   llvm_unreachable("Unhandled case in directive handling?");
