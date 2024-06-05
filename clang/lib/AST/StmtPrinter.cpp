@@ -1153,6 +1153,19 @@ void StmtPrinter::VisitOpenACCComputeConstruct(OpenACCComputeConstruct *S) {
   PrintStmt(S->getStructuredBlock());
 }
 
+void StmtPrinter::VisitOpenACCLoopConstruct(OpenACCLoopConstruct *S) {
+  Indent() << "#pragma acc loop";
+
+  if (!S->clauses().empty()) {
+    OS << ' ';
+    OpenACCClausePrinter Printer(OS, Policy);
+    Printer.VisitClauseList(S->clauses());
+  }
+  OS << '\n';
+
+  PrintStmt(S->getLoop());
+}
+
 //===----------------------------------------------------------------------===//
 //  Expr printing methods.
 //===----------------------------------------------------------------------===//

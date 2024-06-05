@@ -2031,6 +2031,7 @@ enum StmtCode {
 
   // OpenACC Constructs
   STMT_OPENACC_COMPUTE_CONSTRUCT,
+  STMT_OPENACC_LOOP_CONSTRUCT,
 };
 
 /// The kinds of designators that can occur in a

@@ -2158,6 +2158,7 @@ public:
   void VisitRequiresExpr(const RequiresExpr *E);
   void VisitCXXParenListInitExpr(const CXXParenListInitExpr *E);
   void VisitOpenACCComputeConstruct(const OpenACCComputeConstruct *D);
+  void VisitOpenACCLoopConstruct(const OpenACCLoopConstruct *D);
   void VisitOMPExecutableDirective(const OMPExecutableDirective *D);
   void VisitOMPLoopBasedDirective(const OMPLoopBasedDirective *D);
   void VisitOMPLoopDirective(const OMPLoopDirective *D);
@@ -3474,6 +3475,12 @@ void EnqueueVisitor::VisitOMPTargetTeamsDistributeSimdDirective(
 
 void EnqueueVisitor::VisitOpenACCComputeConstruct(
     const OpenACCComputeConstruct *C) {
+  EnqueueChildren(C);
+  for (auto *Clause : C->clauses())
+    EnqueueChildren(Clause);
+}
+
+void EnqueueVisitor::VisitOpenACCLoopConstruct(const OpenACCLoopConstruct *C) {
   EnqueueChildren(C);
   for (auto *Clause : C->clauses())
     EnqueueChildren(Clause);
@@ -6214,6 +6221,8 @@ CXString clang_getCursorKindSpelling(enum CXCursorKind Kind) {
     return cxstring::createRef("ConceptDecl");
   case CXCursor_OpenACCComputeConstruct:
     return cxstring::createRef("OpenACCComputeConstruct");
+  case CXCursor_OpenACCLoopConstruct:
+    return cxstring::createRef("OpenACCLoopConstruct");
   }
 
   llvm_unreachable("Unhandled CXCursorKind");
