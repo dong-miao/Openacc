@@ -81,9 +81,14 @@ public:
       SmallVector<Expr *> VarList;
     };
 
+    struct CollapseDetails {
+      bool IsForce;
+      Expr *LoopCount;
+    };
+
     std::variant<std::monostate, DefaultDetails, ConditionDetails,
                  IntExprDetails, VarListDetails, WaitDetails, DeviceTypeDetails,
-                 ReductionDetails>
+                 ReductionDetails, CollapseDetails>
         Details = std::monostate{};
 
   public:
@@ -240,6 +245,18 @@ public:
       return std::get<VarListDetails>(Details).IsZero;
     }
 
+    bool isForce() const {
+      assert(ClauseKind == OpenACCClauseKind::Collapse &&
+             "Only 'collapse' has a force tag");
+      return std::get<CollapseDetails>(Details).IsForce;
+    }
+
+    Expr *getLoopCount() const {
+      assert(ClauseKind == OpenACCClauseKind::Collapse &&
+             "Only 'collapse' has a loop count");
+      return std::get<CollapseDetails>(Details).LoopCount;
+    }
+
     ArrayRef<DeviceTypeArgument> getDeviceTypeArchitectures() const {
       assert((ClauseKind == OpenACCClauseKind::DeviceType ||
               ClauseKind == OpenACCClauseKind::DType) &&
@@ -378,6 +395,12 @@ public:
              "Only 'device_type'/'dtype' has a device-type-arg list");
       Details = DeviceTypeDetails{std::move(Archs)};
     }
+
+    void setCollapseDetails(bool IsForce, Expr *LoopCount) {
+      assert(ClauseKind == OpenACCClauseKind::Collapse &&
+             "Only 'collapse' has collapse details");
+      Details = CollapseDetails{IsForce, LoopCount};
+    }
   };
 
   SemaOpenACC(Sema &S);
@@ -442,6 +465,8 @@ public:
                                    Expr *LowerBound,
                                    SourceLocation ColonLocFirst, Expr *Length,
                                    SourceLocation RBLoc);
+  /// Checks the loop depth value for a collapse clause.
+  ExprResult CheckCollapseLoopCount(Expr *LoopCount);
 
   /// Helper type for the registration/assignment of constructs that need to
   /// 'know' about their parent constructs and hold a reference to them, such as
