@@ -2029,9 +2029,10 @@ enum StmtCode {
   // SYCLUniqueStableNameExpr
   EXPR_SYCL_UNIQUE_STABLE_NAME,
 
-  // OpenACC Constructs
+  // OpenACC Constructs/Exprs
   STMT_OPENACC_COMPUTE_CONSTRUCT,
   STMT_OPENACC_LOOP_CONSTRUCT,
+  EXPR_OPENACC_ASTERISK_SIZE,
 };
 
 /// The kinds of designators that can occur in a

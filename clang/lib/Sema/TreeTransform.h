@@ -4011,6 +4011,10 @@ ExprResult RebuildArraySectionExpr(bool IsOMPArraySection, Expr *Base,
         OpenACCDirectiveKind::Loop, BeginLoc, DirLoc, EndLoc, Clauses, Loop);
   }
 
+  ExprResult RebuildOpenACCAsteriskSizeExpr(SourceLocation AsteriskLoc) {
+    return getSema().OpenACC().ActOnOpenACCAsteriskSizeExpr(AsteriskLoc);
+  }
+
 private:
   TypeLoc TransformTypeInObjectScope(TypeLoc TL,
                                      QualType ObjectType,
@@ -11321,6 +11325,36 @@ void OpenACCClauseTransform<Derived>::VisitCollapseClause(
       ParsedClause.getLParenLoc(), ParsedClause.isForce(),
       ParsedClause.getLoopCount(), ParsedClause.getEndLoc());
 }
+
+template <typename Derived>
+void OpenACCClauseTransform<Derived>::VisitTileClause(
+    const OpenACCTileClause &C) {
+
+  llvm::SmallVector<Expr *> TransformedExprs;
+
+  for (Expr *E : C.getSizeExprs()) {
+    ExprResult NewSizeExpr = Self.TransformExpr(E);
+
+    if (!NewSizeExpr.isUsable())
+      return;
+
+    NewSizeExpr = Self.getSema().OpenACC().ActOnIntExpr(
+        OpenACCDirectiveKind::Invalid, ParsedClause.getClauseKind(),
+        NewSizeExpr.get()->getBeginLoc(), NewSizeExpr.get());
+
+    NewSizeExpr = Self.getSema().OpenACC().CheckTileSizeExpr(NewSizeExpr.get());
+
+    if (!NewSizeExpr.isUsable())
+      return;
+    TransformedExprs.push_back(NewSizeExpr.get());
+  }
+
+  ParsedClause.setIntExprDetails(TransformedExprs);
+  NewClause = OpenACCTileClause::Create(
+      Self.getSema().getASTContext(), ParsedClause.getBeginLoc(),
+      ParsedClause.getLParenLoc(), ParsedClause.getIntExprs(),
+      ParsedClause.getEndLoc());
+}
 } // namespace
 template <typename Derived>
 OpenACCClause *TreeTransform<Derived>::TransformOpenACCClause(
@@ -11405,6 +11439,15 @@ TreeTransform<Derived>::TransformOpenACCLoopConstruct(OpenACCLoopConstruct *C) {
   return getDerived().RebuildOpenACCLoopConstruct(
       C->getBeginLoc(), C->getDirectiveLoc(), C->getEndLoc(),
       TransformedClauses, Loop);
+}
+
+template <typename Derived>
+ExprResult TreeTransform<Derived>::TransformOpenACCAsteriskSizeExpr(
+    OpenACCAsteriskSizeExpr *E) {
+  if (getDerived().AlwaysRebuild())
+    return getDerived().RebuildOpenACCAsteriskSizeExpr(E->getLocation());
+  // Nothing can ever change, so there is never anything to transform.
+  return E;
 }
 
 //===----------------------------------------------------------------------===//

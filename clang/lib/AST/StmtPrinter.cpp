@@ -1287,6 +1287,10 @@ void StmtPrinter::VisitPredefinedExpr(PredefinedExpr *Node) {
   OS << PredefinedExpr::getIdentKindName(Node->getIdentKind());
 }
 
+void StmtPrinter::VisitOpenACCAsteriskSizeExpr(OpenACCAsteriskSizeExpr *Node) {
+  OS << '*';
+}
+
 void StmtPrinter::VisitCharacterLiteral(CharacterLiteral *Node) {
   CharacterLiteral::print(Node->getValue(), Node->getKind(), OS);
 }
