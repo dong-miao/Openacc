@@ -2561,6 +2561,12 @@ void OpenACCClauseProfiler::VisitAsyncClause(const OpenACCAsyncClause &Clause) {
     Profiler.VisitStmt(Clause.getIntExpr());
 }
 
+void OpenACCClauseProfiler::VisitWorkerClause(
+    const OpenACCWorkerClause &Clause) {
+  if (Clause.hasIntExpr())
+    Profiler.VisitStmt(Clause.getIntExpr());
+}
+
 void OpenACCClauseProfiler::VisitWaitClause(const OpenACCWaitClause &Clause) {
   if (Clause.hasDevNumExpr())
     Profiler.VisitStmt(Clause.getDevNumExpr());
