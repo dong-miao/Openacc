@@ -2728,3 +2728,8 @@ void TextNodeDumper::VisitOpenACCLoopConstruct(const OpenACCLoopConstruct *S) {
   else
     OS << " parent: " << S->getParentComputeConstructKind();
 }
+
+void TextNodeDumper::VisitOpenACCCombinedConstruct(
+    const OpenACCCombinedConstruct *S) {
+  OS << " " << S->getDirectiveKind();
+}

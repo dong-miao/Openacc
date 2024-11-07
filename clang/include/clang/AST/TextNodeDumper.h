@@ -395,6 +395,7 @@ public:
   void VisitHLSLBufferDecl(const HLSLBufferDecl *D);
   void VisitOpenACCConstructStmt(const OpenACCConstructStmt *S);
   void VisitOpenACCLoopConstruct(const OpenACCLoopConstruct *S);
+  void VisitOpenACCCombinedConstruct(const OpenACCCombinedConstruct *S);
   void VisitOpenACCAsteriskSizeExpr(const OpenACCAsteriskSizeExpr *S);
 };
 
