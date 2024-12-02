@@ -598,9 +598,6 @@ OpenACCClause *SemaOpenACCClauseVisitor::VisitDefaultClause(
 
 OpenACCClause *SemaOpenACCClauseVisitor::VisitTileClause(
     SemaOpenACC::OpenACCParsedClause &Clause) {
-  // TODO OpenACC: Remove this when we get combined construct impl for this.
-  if (Clause.getDirectiveKind() != OpenACCDirectiveKind::Loop)
-    return isNotImplemented();
 
   // Duplicates here are not really sensible.  We could possible permit
   // multiples if they all had the same value, but there isn't really a good
@@ -1727,6 +1724,7 @@ void SemaOpenACC::AssociatedStmtRAII::SetTileInfoBeforeAssociatedStmt(
   SemaRef.TileInfo.ActiveTile = TileClause;
   SemaRef.TileInfo.TileDepthSatisfied = false;
   SemaRef.TileInfo.CurTileCount = TileClause->getSizeExprs().size();
+  SemaRef.TileInfo.DirectiveKind = DirKind;
 }
 
 SemaOpenACC::AssociatedStmtRAII::~AssociatedStmtRAII() {
@@ -2618,7 +2616,7 @@ void SemaOpenACC::ActOnWhileStmt(SourceLocation WhileLoc) {
 
   if (TileInfo.CurTileCount && *TileInfo.CurTileCount > 0) {
     Diag(WhileLoc, diag::err_acc_invalid_in_loop)
-        << /*while loop*/ 1 << OpenACCDirectiveKind::Loop
+        << /*while loop*/ 1 << TileInfo.DirectiveKind
         << OpenACCClauseKind::Tile;
     assert(TileInfo.ActiveTile && "tile count without object?");
     Diag(TileInfo.ActiveTile->getBeginLoc(), diag::note_acc_active_clause_here)
@@ -2653,8 +2651,7 @@ void SemaOpenACC::ActOnDoStmt(SourceLocation DoLoc) {
 
   if (TileInfo.CurTileCount && *TileInfo.CurTileCount > 0) {
     Diag(DoLoc, diag::err_acc_invalid_in_loop)
-        << /*do loop*/ 2 << OpenACCDirectiveKind::Loop
-        << OpenACCClauseKind::Tile;
+        << /*do loop*/ 2 << TileInfo.DirectiveKind << OpenACCClauseKind::Tile;
     assert(TileInfo.ActiveTile && "tile count without object?");
     Diag(TileInfo.ActiveTile->getBeginLoc(), diag::note_acc_active_clause_here)
         << OpenACCClauseKind::Tile;
@@ -2702,7 +2699,7 @@ void SemaOpenACC::ForStmtBeginHelper(SourceLocation ForLoc,
 
     if (LoopInfo.CurLevelHasLoopAlready) {
       Diag(ForLoc, diag::err_acc_clause_multiple_loops)
-          << OpenACCDirectiveKind::Loop << OpenACCClauseKind::Tile;
+          << TileInfo.DirectiveKind << OpenACCClauseKind::Tile;
       assert(TileInfo.ActiveTile && "No tile object?");
       Diag(TileInfo.ActiveTile->getBeginLoc(),
            diag::note_acc_active_clause_here)
@@ -3213,7 +3210,7 @@ void SemaOpenACC::ActOnForStmtEnd(SourceLocation ForLoc, StmtResult Body) {
 
     if (OtherStmtLoc.isValid() && IsActiveTile) {
       Diag(OtherStmtLoc, diag::err_acc_intervening_code)
-          << OpenACCClauseKind::Tile << OpenACCDirectiveKind::Loop;
+          << OpenACCClauseKind::Tile << TileInfo.DirectiveKind;
       Diag(TileInfo.ActiveTile->getBeginLoc(),
            diag::note_acc_active_clause_here)
           << OpenACCClauseKind::Tile;
@@ -3242,7 +3239,7 @@ bool SemaOpenACC::ActOnStartStmtDirective(OpenACCDirectiveKind K,
   }
   if (TileInfo.CurTileCount && *TileInfo.CurTileCount > 0) {
     Diag(StartLoc, diag::err_acc_invalid_in_loop)
-        << /*OpenACC Construct*/ 0 << OpenACCDirectiveKind::Loop
+        << /*OpenACC Construct*/ 0 << TileInfo.DirectiveKind
         << OpenACCClauseKind::Tile << K;
     assert(TileInfo.ActiveTile && "Tile count without object?");
     Diag(TileInfo.ActiveTile->getBeginLoc(), diag::note_acc_active_clause_here)
