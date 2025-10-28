@@ -5274,3 +5274,8 @@ OpenACCAsteriskSizeExpr *OpenACCAsteriskSizeExpr::Create(const ASTContext &C,
                                                          SourceLocation Loc) {
   return new (C) OpenACCAsteriskSizeExpr(Loc, C.IntTy);
 }
+
+OpenACCAsteriskSizeExpr *
+OpenACCAsteriskSizeExpr::CreateEmpty(const ASTContext &C) {
+  return new (C) OpenACCAsteriskSizeExpr({}, C.IntTy);
+}
