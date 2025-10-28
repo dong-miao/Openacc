@@ -1443,7 +1443,7 @@ StmtResult Parser::ParseOpenACCDirectiveStmt() {
 
   OpenACCDirectiveParseInfo DirInfo = ParseOpenACCDirective();
   if (getActions().OpenACC().ActOnStartStmtDirective(DirInfo.DirKind,
-                                                  DirInfo.StartLoc))
+                                                     DirInfo.StartLoc))
     return StmtError();
 
   StmtResult AssocStmt;
@@ -1453,7 +1453,7 @@ StmtResult Parser::ParseOpenACCDirectiveStmt() {
     ParseScope ACCScope(this, getOpenACCScopeFlags(DirInfo.DirKind));
 
     AssocStmt = getActions().OpenACC().ActOnAssociatedStmt(DirInfo.DirKind,
-                                                        ParseStatement());
+                                                           ParseStatement());
   }
 
   return getActions().OpenACC().ActOnEndStmtDirective(
