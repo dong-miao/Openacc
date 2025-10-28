@@ -54,6 +54,7 @@
 #include "clang/Sema/ObjCMethodList.h"
 #include "clang/Sema/Ownership.h"
 #include "clang/Sema/Scope.h"
+#include "clang/Sema/SemaBase.h"
 #include "clang/Sema/SemaConcept.h"
 #include "clang/Sema/TypoCorrection.h"
 #include "clang/Sema/Weak.h"
@@ -354,7 +355,7 @@ private:
 };
 
 /// Sema - This implements semantic analysis and AST building for C.
-class Sema final {
+class Sema final : public SemaBase {
   Sema(const Sema &) = delete;
   void operator=(const Sema &) = delete;
 
@@ -1914,14 +1915,6 @@ public:
   /// Is the last error level diagnostic immediate. This is used to determined
   /// whether the next info diagnostic should be immediate.
   bool IsLastErrorImmediate = true;
-
-  /// Emit a diagnostic.
-  SemaDiagnosticBuilder Diag(SourceLocation Loc, unsigned DiagID,
-                             bool DeferHint = false);
-
-  /// Emit a partial diagnostic.
-  SemaDiagnosticBuilder Diag(SourceLocation Loc, const PartialDiagnostic &PD,
-                             bool DeferHint = false);
 
   /// Build a partial diagnostic.
   PartialDiagnostic PDiag(unsigned DiagID = 0); // in SemaInternal.h
@@ -13195,9 +13188,7 @@ public:
   /// Diagnostics that are emitted only if we discover that the given function
   /// must be codegen'ed.  Because handling these correctly adds overhead to
   /// compilation, this is currently only enabled for CUDA compilations.
-  llvm::DenseMap<CanonicalDeclPtr<const FunctionDecl>,
-                 std::vector<PartialDiagnosticAt>>
-      DeviceDeferredDiags;
+  SemaBase::SemaDiagnosticBuilder::DeferredDiagnosticsType DeviceDeferredDiags;
 
   /// A pair of a canonical FunctionDecl and a SourceLocation.  When used as the
   /// key in a hashtable, both the FD and location are hashed.

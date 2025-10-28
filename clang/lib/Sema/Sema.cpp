@@ -189,7 +189,7 @@ const uint64_t Sema::MaximumAlignment;
 
 Sema::Sema(Preprocessor &pp, ASTContext &ctxt, ASTConsumer &consumer,
            TranslationUnitKind TUKind, CodeCompleteConsumer *CodeCompleter)
-    : ExternalSource(nullptr), CurFPFeatures(pp.getLangOpts()),
+    : SemaBase(*this), ExternalSource(nullptr), CurFPFeatures(pp.getLangOpts()),
       LangOpts(pp.getLangOpts()), PP(pp), Context(ctxt), Consumer(consumer),
       Diags(PP.getDiagnostics()), SourceMgr(PP.getSourceManager()),
       CollectStats(false), CodeCompleter(CodeCompleter), CurContext(nullptr),
@@ -1597,11 +1597,6 @@ void Sema::EmitCurrentDiagnostic(unsigned DiagID) {
     PrintContextStack();
 }
 
-Sema::SemaDiagnosticBuilder
-Sema::Diag(SourceLocation Loc, const PartialDiagnostic &PD, bool DeferHint) {
-  return Diag(Loc, PD.getDiagID(), DeferHint) << PD;
-}
-
 bool Sema::hasUncompilableErrorOccurred() const {
   if (getDiagnostics().hasUncompilableErrorOccurred())
     return true;
@@ -1894,29 +1889,6 @@ Sema::targetDiag(SourceLocation Loc, unsigned DiagID, const FunctionDecl *FD) {
 
   return SemaDiagnosticBuilder(SemaDiagnosticBuilder::K_Immediate, Loc, DiagID,
                                FD, *this);
-}
-
-Sema::SemaDiagnosticBuilder Sema::Diag(SourceLocation Loc, unsigned DiagID,
-                                       bool DeferHint) {
-  bool IsError = Diags.getDiagnosticIDs()->isDefaultMappingAsError(DiagID);
-  bool ShouldDefer = getLangOpts().CUDA && LangOpts.GPUDeferDiag &&
-                     DiagnosticIDs::isDeferrable(DiagID) &&
-                     (DeferHint || DeferDiags || !IsError);
-  auto SetIsLastErrorImmediate = [&](bool Flag) {
-    if (IsError)
-      IsLastErrorImmediate = Flag;
-  };
-  if (!ShouldDefer) {
-    SetIsLastErrorImmediate(true);
-    return SemaDiagnosticBuilder(SemaDiagnosticBuilder::K_Immediate, Loc,
-                                 DiagID, getCurFunctionDecl(), *this);
-  }
-
-  SemaDiagnosticBuilder DB = getLangOpts().CUDAIsDevice
-                                 ? CUDADiagIfDeviceCode(Loc, DiagID)
-                                 : CUDADiagIfHostCode(Loc, DiagID);
-  SetIsLastErrorImmediate(DB.isImmediate());
-  return DB;
 }
 
 void Sema::checkTypeSupport(QualType Ty, SourceLocation Loc, ValueDecl *D) {
