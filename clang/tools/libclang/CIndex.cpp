@@ -5694,6 +5694,8 @@ CXString clang_getCursorKindSpelling(enum CXCursorKind Kind) {
     return cxstring::createRef("ArraySubscriptExpr");
   case CXCursor_OMPArraySectionExpr:
     return cxstring::createRef("OMPArraySectionExpr");
+  case CXCursor_ArraySectionExpr:
+    return cxstring::createRef("ArraySectionExpr");
   case CXCursor_OMPArrayShapingExpr:
     return cxstring::createRef("OMPArrayShapingExpr");
   case CXCursor_OMPIteratorExpr:

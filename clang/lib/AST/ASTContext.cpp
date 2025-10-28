@@ -1379,7 +1379,7 @@ void ASTContext::InitBuiltinTypes(const TargetInfo &Target,
     // FIXME: Once we implement OpenACC array sections in Sema, this will either
     // be combined with the OpenMP type, or given its own type. In the meantime,
     // just use the OpenMP type so that parsing can work.
-    InitBuiltinType(OMPArraySectionTy, BuiltinType::OMPArraySection);
+    InitBuiltinType(ArraySectionTy, BuiltinType::ArraySection);
   }
   if (LangOpts.MatrixTypes)
     InitBuiltinType(IncompleteMatrixIdxTy, BuiltinType::IncompleteMatrixIdx);

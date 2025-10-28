@@ -1536,6 +1536,19 @@ void StmtPrinter::VisitOMPArraySectionExpr(OMPArraySectionExpr *Node) {
   OS << "]";
 }
 
+void StmtPrinter::VisitArraySectionExpr(ArraySectionExpr *Node) {
+  PrintExpr(Node->getBase());
+  OS << "[";
+  if (Node->getLowerBound())
+    PrintExpr(Node->getLowerBound());
+  if (Node->getColonLocFirst().isValid()) {
+    OS << ":";
+    if (Node->getLength())
+      PrintExpr(Node->getLength());
+  }
+  OS << "]";
+}
+
 void StmtPrinter::VisitOMPArrayShapingExpr(OMPArrayShapingExpr *Node) {
   OS << "(";
   for (Expr *E : Node->getDimensions()) {

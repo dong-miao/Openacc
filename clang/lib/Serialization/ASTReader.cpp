@@ -7274,6 +7274,9 @@ QualType ASTReader::GetType(TypeID ID) {
     case PREDEF_TYPE_OMP_ARRAY_SECTION:
       T = Context.OMPArraySectionTy;
       break;
+    case PREDEF_TYPE_ARRAY_SECTION:
+      T = Context.ArraySectionTy;
+      break;
     case PREDEF_TYPE_OMP_ARRAY_SHAPING:
       T = Context.OMPArraySectionTy;
       break;

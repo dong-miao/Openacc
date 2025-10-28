@@ -1645,7 +1645,8 @@ enum CXCursorKind {
 
   /** OpenMP 5.0 [2.1.5, Array Section].
    */
-  CXCursor_OMPArraySectionExpr = 147,
+  CXCursor_OMPArraySectionExpr = 1470,
+  CXCursor_ArraySectionExpr = 147,
 
   /** Represents an @available(...) check.
    */

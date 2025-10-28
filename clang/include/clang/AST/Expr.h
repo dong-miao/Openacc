@@ -6599,6 +6599,154 @@ public:
 
 };
 
+class ArraySectionExpr : public Expr {
+  friend class ASTStmtReader;
+  friend class ASTStmtWriter;
+
+public:
+  enum ArraySectionType { OMPArraySection, OpenACCArraySection };
+
+private:
+  enum {
+    BASE,
+    LOWER_BOUND,
+    LENGTH,
+    STRIDE,
+    END_EXPR,
+    OPENACC_END_EXPR = STRIDE
+  };
+
+  ArraySectionType ASType = OMPArraySection;
+  Stmt *SubExprs[END_EXPR] = {nullptr};
+  SourceLocation ColonLocFirst;
+  SourceLocation ColonLocSecond;
+  SourceLocation RBracketLoc;
+
+public:
+  // Constructor for OMP array sections, which include a 'stride'.
+  ArraySectionExpr(Expr *Base, Expr *LowerBound, Expr *Length, Expr *Stride,
+                   QualType Type, ExprValueKind VK, ExprObjectKind OK,
+                   SourceLocation ColonLocFirst, SourceLocation ColonLocSecond,
+                   SourceLocation RBracketLoc)
+      : Expr(ArraySectionExprClass, Type, VK, OK), ASType(OMPArraySection),
+        ColonLocFirst(ColonLocFirst), ColonLocSecond(ColonLocSecond),
+        RBracketLoc(RBracketLoc) {
+    setBase(Base);
+    setLowerBound(LowerBound);
+    setLength(Length);
+    setStride(Stride);
+    setDependence(computeDependence(this));
+  }
+
+  // Constructor for OpenACC sub-arrays, which do not permit a 'stride'.
+  ArraySectionExpr(Expr *Base, Expr *LowerBound, Expr *Length, QualType Type,
+                   ExprValueKind VK, ExprObjectKind OK, SourceLocation ColonLoc,
+                   SourceLocation RBracketLoc)
+      : Expr(ArraySectionExprClass, Type, VK, OK), ASType(OpenACCArraySection),
+        ColonLocFirst(ColonLoc), RBracketLoc(RBracketLoc) {
+    setBase(Base);
+    setLowerBound(LowerBound);
+    setLength(Length);
+    setDependence(computeDependence(this));
+  }
+
+  /// Create an empty array section expression.
+  explicit ArraySectionExpr(EmptyShell Shell)
+      : Expr(ArraySectionExprClass, Shell) {}
+
+  /// Return original type of the base expression for array section.
+  static QualType getBaseOriginalType(const Expr *Base);
+
+  static bool classof(const Stmt *T) {
+    return T->getStmtClass() == ArraySectionExprClass;
+  }
+
+  bool isOMPArraySection() const { return ASType == OMPArraySection; }
+  bool isOpenACCArraySection() const { return ASType == OpenACCArraySection; }
+
+  /// Get base of the array section.
+  Expr *getBase() { return cast<Expr>(SubExprs[BASE]); }
+  const Expr *getBase() const { return cast<Expr>(SubExprs[BASE]); }
+
+  /// Get lower bound of array section.
+  Expr *getLowerBound() { return cast_or_null<Expr>(SubExprs[LOWER_BOUND]); }
+  const Expr *getLowerBound() const {
+    return cast_or_null<Expr>(SubExprs[LOWER_BOUND]);
+  }
+
+  /// Get length of array section.
+  Expr *getLength() { return cast_or_null<Expr>(SubExprs[LENGTH]); }
+  const Expr *getLength() const { return cast_or_null<Expr>(SubExprs[LENGTH]); }
+
+  /// Get stride of array section.
+  Expr *getStride() {
+    assert(ASType != OpenACCArraySection &&
+           "Stride not valid in OpenACC subarrays");
+    return cast_or_null<Expr>(SubExprs[STRIDE]);
+  }
+
+  const Expr *getStride() const {
+    assert(ASType != OpenACCArraySection &&
+           "Stride not valid in OpenACC subarrays");
+    return cast_or_null<Expr>(SubExprs[STRIDE]);
+  }
+
+  SourceLocation getBeginLoc() const LLVM_READONLY {
+    return getBase()->getBeginLoc();
+  }
+  SourceLocation getEndLoc() const LLVM_READONLY { return RBracketLoc; }
+
+  SourceLocation getColonLocFirst() const { return ColonLocFirst; }
+  SourceLocation getColonLocSecond() const {
+    assert(ASType != OpenACCArraySection &&
+           "second colon for stride not valid in OpenACC subarrays");
+    return ColonLocSecond;
+  }
+  SourceLocation getRBracketLoc() const { return RBracketLoc; }
+
+  SourceLocation getExprLoc() const LLVM_READONLY {
+    return getBase()->getExprLoc();
+  }
+
+  child_range children() {
+    return child_range(
+        &SubExprs[BASE],
+        &SubExprs[ASType == OMPArraySection ? END_EXPR : OPENACC_END_EXPR]);
+  }
+
+  const_child_range children() const {
+    return const_child_range(
+        &SubExprs[BASE],
+        &SubExprs[ASType == OMPArraySection ? END_EXPR : OPENACC_END_EXPR]);
+  }
+
+private:
+  /// Set base of the array section.
+  void setBase(Expr *E) { SubExprs[BASE] = E; }
+
+  /// Set lower bound of the array section.
+  void setLowerBound(Expr *E) { SubExprs[LOWER_BOUND] = E; }
+
+  /// Set length of the array section.
+  void setLength(Expr *E) { SubExprs[LENGTH] = E; }
+
+  /// Set length of the array section.
+  void setStride(Expr *E) {
+    assert(ASType != OpenACCArraySection &&
+           "Stride not valid in OpenACC subarrays");
+    SubExprs[STRIDE] = E;
+  }
+
+  void setColonLocFirst(SourceLocation L) { ColonLocFirst = L; }
+
+  void setColonLocSecond(SourceLocation L) {
+    assert(ASType != OpenACCArraySection &&
+           "second colon for stride not valid in OpenACC subarrays");
+    ColonLocSecond = L;
+  }
+  void setRBracketLoc(SourceLocation L) { RBracketLoc = L; }
+};
+
 /// Frontend produces RecoveryExprs on semantic errors that prevent creating
 /// other well-formed expressions. E.g. when type-checking of a binary operator
 /// fails, we cannot produce a BinaryOperator expression. Instead, we can choose

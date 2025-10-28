@@ -427,6 +427,15 @@ ExprDependence clang::computeDependence(OMPArraySectionExpr *E) {
   return D;
 }
 
+ExprDependence clang::computeDependence(ArraySectionExpr *E) {
+  auto D = E->getBase()->getDependence();
+  if (auto *LB = E->getLowerBound())
+    D |= LB->getDependence();
+  if (auto *Len = E->getLength())
+    D |= Len->getDependence();
+  return D;
+}
+
 ExprDependence clang::computeDependence(OMPArrayShapingExpr *E) {
   auto D = E->getBase()->getDependence();
   for (Expr *Dim: E->getDimensions())

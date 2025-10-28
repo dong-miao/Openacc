@@ -2761,6 +2761,20 @@ public:
                                               Length, Stride, RBracketLoc);
   }
 
+ExprResult RebuildArraySectionExpr(bool IsOMPArraySection, Expr *Base,
+                                     SourceLocation LBracketLoc,
+                                     Expr *LowerBound,
+                                     SourceLocation ColonLocFirst,
+                                     SourceLocation ColonLocSecond,
+                                     Expr *Length, Expr *Stride,
+                                     SourceLocation RBracketLoc) {
+    assert(Stride == nullptr && !ColonLocSecond.isValid() &&
+           "Stride/second colon not allowed for OpenACC");
+
+    return getSema().OpenACC().ActOnArraySectionExpr(
+        Base, LBracketLoc, LowerBound, ColonLocFirst, Length, RBracketLoc);
+  }
+
   /// Build a new array shaping expression.
   ///
   /// By default, performs semantic analysis to build the new expression.
@@ -11508,6 +11522,38 @@ TreeTransform<Derived>::TransformOMPArraySectionExpr(OMPArraySectionExpr *E) {
       Base.get(), E->getBase()->getEndLoc(), LowerBound.get(),
       E->getColonLocFirst(), E->getColonLocSecond(), Length.get(), Stride.get(),
       E->getRBracketLoc());
+}
+
+template <typename Derived>
+ExprResult
+TreeTransform<Derived>::TransformArraySectionExpr(ArraySectionExpr *E) {
+  ExprResult Base = getDerived().TransformExpr(E->getBase());
+  if (Base.isInvalid())
+    return ExprError();
+
+  ExprResult LowerBound;
+  if (E->getLowerBound()) {
+    LowerBound = getDerived().TransformExpr(E->getLowerBound());
+    if (LowerBound.isInvalid())
+      return ExprError();
+  }
+
+  ExprResult Stride;
+  ExprResult Length;
+  if (E->getLength()) {
+    Length = getDerived().TransformExpr(E->getLength());
+    if (Length.isInvalid())
+      return ExprError();
+  }
+
+  if (!getDerived().AlwaysRebuild() && Base.get() == E->getBase() &&
+      LowerBound.get() == E->getLowerBound() && Length.get() == E->getLength() && E->isOpenACCArraySection())
+    return E;
+
+  return getDerived().RebuildArraySectionExpr(
+      E->isOMPArraySection(), Base.get(), E->getBase()->getEndLoc(), LowerBound.get(),
+      E->getColonLocFirst(),  E->isOMPArraySection() ? E->getColonLocSecond() : SourceLocation{},
+      Length.get(), Stride.get(), E->getRBracketLoc());
 }
 
 template <typename Derived>
