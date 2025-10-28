@@ -43,6 +43,7 @@
 #include "clang/Sema/ScopeInfo.h"
 #include "clang/Sema/SemaConsumer.h"
 #include "clang/Sema/SemaInternal.h"
+#include "clang/Sema/SemaOpenACC.h"
 #include "clang/Sema/TemplateDeduction.h"
 #include "clang/Sema/TemplateInstCallback.h"
 #include "clang/Sema/TypoCorrection.h"
@@ -193,6 +194,7 @@ Sema::Sema(Preprocessor &pp, ASTContext &ctxt, ASTConsumer &consumer,
       Diags(PP.getDiagnostics()), SourceMgr(PP.getSourceManager()),
       CollectStats(false), CodeCompleter(CodeCompleter), CurContext(nullptr),
       OriginalLexicalContext(nullptr), MSStructPragmaOn(false),
+      OpenACCPtr(std::make_unique<SemaOpenACC>(*this)),
       MSPointerToMemberRepresentationMethod(
           LangOpts.getMSPointerToMemberRepresentationMethod()),
       VtorDispStack(LangOpts.getVtorDispMode()),
