@@ -7318,7 +7318,7 @@ void ASTRecordWriter::writeOpenACCClause(const OpenACCClause *C) {
   case OpenACCClauseKind::If: {
     const auto *IC = cast<OpenACCIfClause>(C);
     writeSourceLocation(IC->getLParenLoc());
-    AddStmt(IC->getConditionExpr());
+    AddStmt(const_cast<Expr*>(IC->getConditionExpr()));
     return;
   }
   case OpenACCClauseKind::Self: {
@@ -7326,7 +7326,7 @@ void ASTRecordWriter::writeOpenACCClause(const OpenACCClause *C) {
     writeSourceLocation(SC->getLParenLoc());
     writeBool(SC->hasConditionExpr());
     if (SC->hasConditionExpr())
-      AddStmt(SC->getConditionExpr());
+      AddStmt(const_cast<Expr*>(SC->getConditionExpr()));
     return;
   }
   case OpenACCClauseKind::NumGangs: {
@@ -7346,7 +7346,7 @@ void ASTRecordWriter::writeOpenACCClause(const OpenACCClause *C) {
   case OpenACCClauseKind::VectorLength: {
     const auto *NWC = cast<OpenACCVectorLengthClause>(C);
     writeSourceLocation(NWC->getLParenLoc());
-    AddStmt(NWC->getIntExpr());
+    AddStmt(const_cast<Expr*>(NWC->getIntExpr()));
     return;
   }
   case OpenACCClauseKind::Private: {
