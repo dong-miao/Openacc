@@ -7,7 +7,7 @@
 
 ## 1. Clone Polygeist
 ```sh
-git clone --recursive https://github.com/llvm/Polygeist
+git clone --recursive https://github.com/dong-miao/Openacc.git
 cd Polygeist
 ```
 
