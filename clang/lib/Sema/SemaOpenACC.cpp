@@ -930,14 +930,10 @@ OpenACCClause *SemaOpenACCClauseVisitor::VisitAttachClause(
 
   // ActOnVar ensured that everything is a valid variable reference, but we
   // still have to make sure it is a pointer type.
-  llvm::SmallVector<Expr *> VarList{Clause.getVarList().begin(),
-                                    Clause.getVarList().end()};
-  VarList.erase(std::remove_if(VarList.begin(), VarList.end(),
-                               [&](Expr *E) {
-                                 return SemaRef.CheckVarIsPointerType(
-                                     OpenACCClauseKind::Attach, E);
-                               }),
-                VarList.end());
+  llvm::SmallVector<Expr *> VarList{Clause.getVarList()};
+  llvm::erase_if(VarList, [&](Expr *E) {
+    return SemaRef.CheckVarIsPointerType(OpenACCClauseKind::Attach, E);
+  });
   Clause.setVarListDetails(VarList,
                            /*IsReadOnly=*/false, /*IsZero=*/false);
   return OpenACCAttachClause::Create(Ctx, Clause.getBeginLoc(),
@@ -956,14 +952,10 @@ OpenACCClause *SemaOpenACCClauseVisitor::VisitDevicePtrClause(
 
   // ActOnVar ensured that everything is a valid variable reference, but we
   // still have to make sure it is a pointer type.
-  llvm::SmallVector<Expr *> VarList{Clause.getVarList().begin(),
-                                    Clause.getVarList().end()};
-  VarList.erase(std::remove_if(VarList.begin(), VarList.end(),
-                               [&](Expr *E) {
-                                 return SemaRef.CheckVarIsPointerType(
-                                     OpenACCClauseKind::DevicePtr, E);
-                               }),
-                VarList.end());
+  llvm::SmallVector<Expr *> VarList{Clause.getVarList()};
+  llvm::erase_if(VarList, [&](Expr *E) {
+    return SemaRef.CheckVarIsPointerType(OpenACCClauseKind::DevicePtr, E);
+  });
   Clause.setVarListDetails(VarList,
                            /*IsReadOnly=*/false, /*IsZero=*/false);
 
@@ -1489,7 +1481,6 @@ void CollectActiveReductionClauses(
 }
 
 } // namespace
-
 
 SemaOpenACC::SemaOpenACC(Sema &S) : SemaBase(S) {}
 
@@ -2203,8 +2194,7 @@ ExprResult SemaOpenACC::ActOnArraySectionExpr(Expr *Base, SourceLocation LBLoc,
     // Fill in a dummy 'length' so that when we instantiate this we don't
     // double-diagnose here.
     ExprResult Recovery = SemaRef.CreateRecoveryExpr(
-        ColonLoc, SourceLocation(), ArrayRef<Expr *>{std::nullopt},
-        Context.IntTy);
+        ColonLoc, SourceLocation(), ArrayRef<Expr *>(), Context.IntTy);
     Length = Recovery.isUsable() ? Recovery.get() : nullptr;
   }
 
@@ -2433,7 +2423,7 @@ ExprResult SemaOpenACC::CheckGangExpr(OpenACCGangKind GK, Expr *E) {
     case OpenACCGangKind::Static:
       return CheckGangStaticExpr(*this, E);
     }
-  }
+  } break;
   default:
     llvm_unreachable("Non compute construct in active compute construct?");
   }

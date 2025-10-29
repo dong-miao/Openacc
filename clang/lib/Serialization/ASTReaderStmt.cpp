@@ -4156,7 +4156,7 @@ Stmt *ASTReader::ReadStmtFromStream(ModuleFile &F) {
                                numRequirement);
       break;
     }
-
+  }
     // We hit a STMT_STOP, so we're done with this expression.
     if (Finished)
       break;
