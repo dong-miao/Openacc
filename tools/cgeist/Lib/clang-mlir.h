@@ -145,6 +145,12 @@ struct MLIRASTConsumer : public ASTConsumer {
   mlir::Location getMLIRLocation(clang::SourceLocation loc);
 };
 
+template <typename Op, typename TermOp>
+  mlir::LogicalResult emitOpenACCOpCombinedConstruct(
+      mlir::Location start, mlir::Location end, OpenACCDirectiveKind dirKind,
+      SourceLocation dirLoc, llvm::ArrayRef<const OpenACCClause *> clauses,
+      const Stmt *loopStmt);
+
 class MLIRScanner : public StmtVisitor<MLIRScanner, ValueCategory> {
 private:
   friend class IfScope;
@@ -292,6 +298,9 @@ public:
 
   ValueCategory
   VisitOMPParallelForDirective(clang::OMPParallelForDirective *fors);
+
+  ValueCategory
+  VisitOpenACCCombinedConstruct(clang::OpenACCCombinedConstruct *fors);
 
   ValueCategory VisitWhileStmt(clang::WhileStmt *fors);
 

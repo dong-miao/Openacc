@@ -11,6 +11,7 @@
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/ControlFlow/IR/ControlFlowOps.h"
 #include "mlir/Dialect/OpenMP/OpenMPDialect.h"
+#include "mlir/Dialect/OpenACC/OpenACC.h"
 #include "mlir/Dialect/SCF/IR/SCF.h"
 #include "mlir/IR/Diagnostics.h"
 
@@ -18,6 +19,7 @@
 
 using namespace mlir;
 using namespace mlir::arith;
+using namespace mlir::acc;
 
 static bool isTerminator(Operation *op) {
   return op->mightHaveTrait<OpTrait::IsTerminator>();
@@ -712,6 +714,44 @@ ValueCategory MLIRScanner::VisitOMPParallelForDirective(
   for (auto pair : prevInduction)
     params[pair.first] = pair.second;
 
+  return nullptr;
+}
+
+template <typename Op, typename TermOp>
+mlir::LogicalResult emitOpenACCOpCombinedConstruct(
+    mlir::Location start, mlir::Location end, OpenACCDirectiveKind dirKind,
+    SourceLocation dirLoc, llvm::ArrayRef<const OpenACCClause *> clauses,
+    const Stmt *loopStmt) {
+  mlir::LogicalResult res = mlir::success();
+
+  return res;
+}
+
+ValueCategory MLIRScanner::VisitOpenACCCombinedConstruct(
+    clang::OpenACCCombinedConstruct *s) {
+  auto start = getMLIRLocation(s->getSourceRange().getBegin());
+  auto end = getMLIRLocation(s->getSourceRange().getEnd());
+  
+  mlir::LogicalResult result = mlir::success();
+  switch (s->getDirectiveKind()) {
+  case OpenACCDirectiveKind::ParallelLoop:
+    result = emitOpenACCOpCombinedConstruct<ParallelOp, mlir::acc::YieldOp>(
+        start, end, s->getDirectiveKind(), s->getDirectiveLoc(), s->clauses(),
+        s->getLoop());
+    break;
+  case OpenACCDirectiveKind::SerialLoop:
+    result = emitOpenACCOpCombinedConstruct<SerialOp, mlir::acc::YieldOp>(
+        start, end, s->getDirectiveKind(), s->getDirectiveLoc(), s->clauses(),
+        s->getLoop());
+    break;
+  case OpenACCDirectiveKind::KernelsLoop:
+    result = emitOpenACCOpCombinedConstruct<KernelsOp, mlir::acc::TerminatorOp>(
+        start, end, s->getDirectiveKind(), s->getDirectiveLoc(), s->clauses(),
+        s->getLoop());
+    break;
+  default:
+    llvm_unreachable("invalid compute construct kind");
+  }
   return nullptr;
 }
 
