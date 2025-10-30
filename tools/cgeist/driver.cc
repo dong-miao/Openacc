@@ -215,6 +215,9 @@ static cl::opt<std::string> cfunction("function",
 static cl::opt<bool> FOpenMP("fopenmp", cl::init(false),
                              cl::desc("Enable OpenMP"));
 
+static cl::opt<bool> FOpenACC("fopenacc", cl::init(false),
+                             cl::desc("Enable OpenACC"));
+
 static cl::opt<std::string> ToCPU("cpuify", cl::init(""),
                                   cl::desc("Convert to cpu"));
 

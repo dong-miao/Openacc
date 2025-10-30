@@ -5952,6 +5952,9 @@ static bool parseMLIR(const char *Argv0, std::vector<std::string> filenames,
   }
   if (FOpenMP)
     Argv.push_back("-fopenmp");
+  if (FOpenACC) {
+    Argv.push_back("-fopenacc");
+}
   if (TargetTripleOpt != "") {
     Argv.push_back("-target");
     Argv.emplace_back(TargetTripleOpt);
